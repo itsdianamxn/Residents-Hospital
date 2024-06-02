@@ -19,6 +19,7 @@ import db.Database;
 import lombok.Getter;
 import lombok.Setter;
 import main.HRInstance;
+import main.Main;
 
 @Getter
 @Setter
@@ -27,10 +28,8 @@ public class MainFrame extends JFrame {
     JTextArea textArea;
     HospitalDAO hospitalDAO;
     ResidentDAO residentDAO;
-    HRInstance hrInstance;
-    public MainFrame(HRInstance hrInstance) {
+    public MainFrame() {
         super("My Drawing Application");
-        this.hrInstance = hrInstance;
         init();
     }
 
@@ -95,7 +94,7 @@ public class MainFrame extends JFrame {
     }
 
     private List<Resident> fetchResidents() {
-        return residentDAO.getAllResidents();
+        return Database.getAllResidents();
     }
 
     public void getMatchingR() {
@@ -137,15 +136,10 @@ public class MainFrame extends JFrame {
             }
 
             Resident resident = new Resident(nameText, gradeText, specializations);
-            try {
-                ResidentDAO.insert(resident);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+            int id = Database.addResident(resident, specializationsText);
 
-            Database.deleteMatchings();
-            hrInstance.addResident(resident);
-            hrInstance.makePairings();
+            Database.makePairings();
+            textArea.setText(Database.getPairing(id));
 
             residentDialog.dispose();
         });
@@ -228,13 +222,7 @@ public class MainFrame extends JFrame {
     }
 
     public void seeMatches() {
-        List<Matching> matches = MatchingDAO.getAllMatchings();
-        StringBuilder matchesText = new StringBuilder();
-
-        for (Matching match : matches) {
-            matchesText.append((Objects.requireNonNull(MatchingDAO.getResidentAssignment(match.getResident()))).getName()).append(": ").append(match.getResident().getName()).append("\n");
-        }
-        textArea.setText(matchesText.toString());
+        textArea.setText(Database.getAllMatchings());
     }
 
 
@@ -278,5 +266,12 @@ public class MainFrame extends JFrame {
         button.setBorder(BorderFactory.createLineBorder(new Color(25, 25, 112), 1));
     }
 
+    public void insertSample() {
+        try {
+            Main.insertDummy(Database.getInstance());
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Failed to insert", JOptionPane.ERROR_MESSAGE);
+        }
+    }
 }
 

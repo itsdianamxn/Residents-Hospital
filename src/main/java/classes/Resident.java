@@ -27,7 +27,6 @@ public class Resident implements Comparable<Resident> {
     }
 
     public Resident(String name, int grade, List<Specialization> specialization){
-        this.resident_id = ResidentDAO.getMaxId() + 1;
         this.name = name;
         this.grade = grade;
         this.specialization = specialization;

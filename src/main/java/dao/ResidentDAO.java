@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ResidentDAO {
-    private static final Connection con = Database.getInstance().getConnection();
+   /* private static final Connection con = Database.getInstance().getConnection();
     public static int getMaxId() {
         String sql_statement = "SELECT MAX(resident_id) FROM residents";
         int max_id = 200;
@@ -29,7 +29,7 @@ public class ResidentDAO {
     }
 
 
-    public static void insert(Resident resident) throws SQLException {
+public static void insert(Resident resident) throws SQLException {
         String sql_statement = "INSERT INTO residents (name, assigned, grade) VALUES (?, ?, ?)";
 
         try (PreparedStatement pstmt = con.prepareStatement(sql_statement)) {
@@ -57,6 +57,7 @@ public class ResidentDAO {
                 ResidentsSpecializationDAO.insert(resident, specialization1);
         }
     }
+
 
     public static Resident findById(int id) {
         String sql_statement = "SELECT * FROM residents WHERE resident_id = ?";
@@ -118,5 +119,5 @@ public class ResidentDAO {
         }
         return residents;
     }
-
+*/
 }

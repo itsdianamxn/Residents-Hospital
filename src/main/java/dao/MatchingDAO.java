@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MatchingDAO {
-    private static final Connection con = Database.getInstance().getConnection();
+   /* private static final Connection con = Database.getInstance().getConnection();
     public static void insert(Matching matching){
         String sql = "INSERT INTO matchings (hospital_id, resident_id) VALUES (?, ?)";
         Matching matching1 = MatchingDAO.findMatch(matching.getHospital(), matching.getResident());
@@ -120,5 +120,5 @@ public class MatchingDAO {
                  System.err.println("Error getting resident assignment: " + e);
              }
         return matches;
-    }
+    }*/
 }

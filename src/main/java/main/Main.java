@@ -11,10 +11,16 @@ import db.Database;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Main {
-    public static void main(String[] args) throws SQLException {
-        Database db =Database.getInstance();
+    public static void main(String[] args) {
+        MainFrame mainFrame = new MainFrame();
+        MainFrame.center(mainFrame);
+        mainFrame.setVisible(true);
+    }
+
+    public static void insertDummy(Database db) throws SQLException {
         db.deleteAllData();
         List<Hospital> hospitals = Arrays.asList(
                 new Hospital("Green Valley Hospital", 3, 8, Arrays.asList(new Specialization("Cardiology"), new Specialization("Neurology"))),
@@ -54,30 +60,15 @@ public class Main {
         );
 
         for(Resident resident : residents){
-            ResidentDAO.insert(resident);
-            resident.setResident_id(ResidentDAO.findByName(resident.getName()).getResident_id());
+           /* ResidentDAO.insert(resident);
+            resident.setResident_id(ResidentDAO.findByName(resident.getName()).getResident_id());*/
+            Database.addResident(resident, String.join(",", resident.getSpecialization().stream().map(x -> x.getName()).collect(Collectors.toList())));
         }
 
         for(Hospital hospital: hospitals){
             HospitalDAO.insert(hospital);
             hospital.setHospital_id(HospitalDAO.findByName(hospital.getName()).getHospital_id());
         }
-
-        HRInstance hrInstance = new HRInstance(hospitals, residents);
-        MainFrame mainFrame = new MainFrame(hrInstance);
-        MainFrame.center(mainFrame);
-        mainFrame.setVisible(true);
-////        for(Resident resident : residents)
-////        {
-////            System.out.println(resident.getName());
-////            for(Hospital hospital : resident.getHospitalList())
-////                System.out.println(hospital.getName() + " " + hospital.getGrade());
-////            System.out.println();
-////
-////        }
-//
-//        hrInstance.printPairings();
-
-
     }
+
 }

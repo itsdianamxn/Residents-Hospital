@@ -15,7 +15,7 @@ import java.util.*;
 @Setter
 @AllArgsConstructor
 public class HRInstance {
-    private List<Hospital> hospitals;
+   /* private List<Hospital> hospitals;
     private List<Resident> residents;
     private List<Matching> pairings;
 
@@ -261,5 +261,5 @@ public class HRInstance {
             }
             System.out.println();
         }
-    }
+    }*/
 }

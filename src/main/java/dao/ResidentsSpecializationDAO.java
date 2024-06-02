@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ResidentsSpecializationDAO {
-    private static final Connection con = Database.getInstance().getConnection();
+/*    private static final Connection con = Database.getInstance().getConnection();
     public static void insert(Resident resident, Specialization specialization) {
         String sql = "INSERT INTO residents_specialization (resident_id, specialization_id) VALUES (?, ?)";
 
@@ -70,5 +70,5 @@ public class ResidentsSpecializationDAO {
             e.printStackTrace();
         }
         return null;
-    }
+    }*/
 }

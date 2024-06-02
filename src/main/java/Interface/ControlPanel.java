@@ -12,11 +12,12 @@ public class ControlPanel extends JPanel {
     JButton gmhBtn = new JButton("Get matching as a hospital");
     JButton seeMatches = new JButton("See matches");
     JButton exit = new JButton("Exit");
+    JButton insertSample = new JButton("Insert sample data");
     public ControlPanel(MainFrame frame) {
         this.frame = frame; init();
     }
     private void init() {
-        GridLayout mgr = new GridLayout(6, 1, 0, 10);
+        GridLayout mgr = new GridLayout(7, 1, 0, 10);
         setLayout(mgr);
 
         add(hospBtn);
@@ -29,47 +30,15 @@ public class ControlPanel extends JPanel {
 
         add(seeMatches);
 
+        add(insertSample);
+
         add(exit);
 
-//        GridLayout mgr = new GridLayout(8, 3, 0, 10);
-//        setLayout(mgr);
-//
-//        add(new Label()); //spacer
-//        add(new Label()); //spacer
-//        add(new Label()); //spacer
-//
-//        add(new Label()); //spacer
-//        add(hospBtn);
-//        add(new Label()); //spacer
-//
-//        add(new Label()); //spacer
-//        add(resBtn);
-//        add(new Label()); //spacer
-//
-//        add(new Label()); //spacer
-//        add(gmrBtn);
-//        add(new Label()); //spacer
-//
-//        add(new Label()); //spacer
-//        add(gmhBtn);
-//        add(new Label()); //spacer
-//
-//        add(new Label()); //spacer
-//        add(seeMatches);
-//        add(new Label()); //spacer
-//
-//        add(new Label()); //spacer
-//        add(exit);
-//        add(new Label()); //spacer
-//
-//        add(new Label()); //spacer
-
-
-        //configure listeners for all buttons
         hospBtn.addActionListener(e -> frame.seeHospitals());
         resBtn.addActionListener(e-> frame.seeResidents());
         gmrBtn.addActionListener(e -> frame.getMatchingR());
         gmhBtn.addActionListener(e -> frame.getMatchingH());
+        insertSample.addActionListener(e -> frame.insertSample());
         seeMatches.addActionListener(e -> frame.seeMatches());
         exit.addActionListener(e -> frame.dispose());
     }
