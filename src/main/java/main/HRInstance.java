@@ -1,15 +1,8 @@
 package main;
 
-import classes.Hospital;
-import classes.Matching;
-import classes.Resident;
-import classes.Specialization;
-import dao.MatchingDAO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.*;
 
 @Getter
 @Setter

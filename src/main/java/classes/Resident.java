@@ -1,5 +1,4 @@
 package classes;
-import dao.ResidentDAO;
 import lombok.Getter;
 import lombok.Setter;
 

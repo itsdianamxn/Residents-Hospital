@@ -1,5 +1,6 @@
 package db;
 
+import classes.Hospital;
 import classes.Resident;
 import classes.Specialization;
 
@@ -47,6 +48,23 @@ public class Database {
         }
     }
 
+    public static int addHospital(Hospital hospital, String specializations) {
+        try ( PreparedStatement ps1 = getInstance().getConnection().prepareStatement(
+                "SELECT add_hospital(?, ?, ?, ?) ")) {
+            ps1.setString(1, hospital.getName());
+            ps1.setInt(2, hospital.getCapacity());
+            ps1.setInt(3, hospital.getGrade());
+            ps1.setString(4, specializations);
+            ResultSet resultSet = ps1.executeQuery();
+            if (resultSet.next())
+            {
+                return resultSet.getInt(1);
+            }
+            throw new IllegalStateException("SQL did not return a value");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
     public static void makePairings() {
         try ( CallableStatement ps1 = getInstance().getConnection().prepareCall(
                 "CALL make_pairings() ")) {
@@ -56,7 +74,7 @@ public class Database {
         }
     }
 
-    public static String getPairing(int resident_id) {
+    public static String getPairingR(int resident_id) {
         try ( PreparedStatement ps1 = getInstance().getConnection().prepareStatement(
                 "SELECT h.name AS hospital_name, r.name AS resident_name\n" +
                         "        FROM matchings m\n" +
@@ -74,6 +92,28 @@ public class Database {
             throw new RuntimeException(e);
         }
     }
+    public static String getPairingH(int hospital_id) {
+        StringBuilder sb = new StringBuilder();
+        try ( PreparedStatement ps1 = getInstance().getConnection().prepareStatement(
+                "SELECT r.name AS resident_name , h.name AS hospital_name\n" +
+                        "        FROM matchings m\n" +
+                        "        JOIN residents r ON m.resident_id = r.resident_id " +
+                        "        JOIN hospitals h ON m.hospital_id = h.hospital_id\n" +
+                        "where h.hospital_id = ?")) {
+            ps1.setInt(1, hospital_id);
+            ResultSet resultSet = ps1.executeQuery();
+            while (resultSet.next())
+            {
+                sb.append(resultSet.getString("resident_name")).append(" is assigned to ").append(resultSet.getString("hospital_name")).append(".\n");
+            }
+            if (sb.isEmpty())
+                return(hospital_id + " has no residents.");
+            else return sb.toString();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public Connection getConnection() {
         return connection;
@@ -99,15 +139,40 @@ public class Database {
             throw new RuntimeException(e);
         }
     }
+
+    public static List<Hospital> getAllHospitals() {
+        String query = "select * from hospital_specialization hs join specializations s on hs.specialization_id = s.specialization_id where hs.hospital_id = ?";
+        List<Hospital> hospitals = new ArrayList<>();
+        try (PreparedStatement pstmt = getInstance().getConnection().prepareStatement("select * from hospitals")) {
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Hospital hospital = new Hospital(rs.getInt("hospital_id"), rs.getString("name"),
+                        rs.getInt("capacity"), rs.getInt("grade"));
+
+                PreparedStatement stmt = getInstance().getConnection().prepareStatement(query);
+                stmt.setInt(1, hospital.getHospital_id());
+                ResultSet specializations = stmt.executeQuery();
+                while (specializations.next())
+                {
+                    Specialization s = new Specialization(specializations.getInt("specialization_id"), specializations.getString("name"));
+                    hospital.getSpecialization().add(s);
+                }
+                specializations.close();
+                stmt.close();
+                hospitals.add(hospital);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return hospitals;
+    }
     public static List<Resident> getAllResidents() {
         String query = "select * from specializations s join residents_specialization rs on rs.specialization_id = s.specialization_id where rs.resident_id = ?";
-        List <Resident> residents = new ArrayList<>();
+        List<Resident> residents = new ArrayList<>();
         try (PreparedStatement pstmt = getInstance().getConnection().prepareStatement("select * from residents")) {
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 Resident resident = new Resident(rs.getInt("resident_id"), rs.getString("name"), rs.getBoolean("assigned"), rs.getInt("grade"));
-
-                //residents.add(ResidentDAO.findById(rs.getInt("resident_id")));
                 PreparedStatement stmt = getInstance().getConnection().prepareStatement(query);
                 stmt.setInt(1, resident.getResident_id());
                 ResultSet specializations = stmt.executeQuery();

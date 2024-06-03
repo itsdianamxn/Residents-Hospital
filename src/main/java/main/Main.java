@@ -5,7 +5,6 @@ import classes.Hospital;
 import classes.Resident;
 import classes.Specialization;
 import dao.HospitalDAO;
-import dao.ResidentDAO;
 import db.Database;
 
 import java.sql.SQLException;

@@ -6,19 +6,14 @@ import java.awt.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-import classes.Matching;
 import classes.Resident;
 import classes.Specialization;
 import dao.HospitalDAO;
 import classes.Hospital;
-import dao.MatchingDAO;
-import dao.ResidentDAO;
 import db.Database;
 import lombok.Getter;
 import lombok.Setter;
-import main.HRInstance;
 import main.Main;
 
 @Getter
@@ -26,8 +21,6 @@ import main.Main;
 public class MainFrame extends JFrame {
     ControlPanel controlPanel;
     JTextArea textArea;
-    HospitalDAO hospitalDAO;
-    ResidentDAO residentDAO;
     public MainFrame() {
         super("My Drawing Application");
         init();
@@ -53,10 +46,6 @@ public class MainFrame extends JFrame {
 
         pack();
         setSize(800, 500);
-
-        hospitalDAO = new HospitalDAO();
-        residentDAO = new ResidentDAO();
-
     }
 
     public void seeHospitals() {
@@ -76,7 +65,7 @@ public class MainFrame extends JFrame {
     }
 
     private List<Hospital> fetchHospitals() {
-        return hospitalDAO.getAllHospitals();
+        return Database.getAllHospitals();
     }
 
     public void seeResidents() {
@@ -139,7 +128,7 @@ public class MainFrame extends JFrame {
             int id = Database.addResident(resident, specializationsText);
 
             Database.makePairings();
-            textArea.setText(Database.getPairing(id));
+            textArea.setText(Database.getPairingR(id));
 
             residentDialog.dispose();
         });
@@ -197,11 +186,10 @@ public class MainFrame extends JFrame {
             }
 
             Hospital hospital = new Hospital(name, capacity, grade, specializations);
-            try {
-                HospitalDAO.insert(hospital);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+            int id = Database.addHospital(hospital, specializationsText);
+            Database.makePairings();
+            textArea.setText(Database.getPairingH(id));
+
             hospitalDialog.dispose();
         });
 
