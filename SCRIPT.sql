@@ -365,6 +365,8 @@ EXCEPTION
         RETURN QUERY SELECT NULL::INT, NULL::INT;
 END;
 $$;
+select * from hospital_specialization where hospital_id = 262;
+select * from residents_specialization where resident_id = 500;
 
 CREATE OR REPLACE PROCEDURE make_preferences()
 LANGUAGE plpgsql
@@ -378,10 +380,17 @@ BEGIN
 	
 END;
 $$;
+select * from specializations;
+select * from matchings;
 
 call make_preferences();
 	
 Create table resident_hospital_preferences (resident_id INT, hospital_id INT);
+delete from resident_hospital_preferences;
+
+select * from resident_hospital_preferences where hospital_id = 261;
+
+CALL make_preferences_of_resident(500);
 --HR Instance
 CREATE OR REPLACE PROCEDURE make_preferences_of_resident(p_resident_id INT)
 LANGUAGE plpgsql
@@ -397,7 +406,7 @@ BEGIN
     JOIN residents_specialization rs ON r.resident_id = rs.resident_id
     JOIN hospital_specialization hs ON rs.specialization_id = hs.specialization_id
     JOIN hospitals h ON hs.hospital_id = h.hospital_id
-    WHERE r.resident_id = p_resident_id;
+    WHERE r.resident_id = p_resident_id ORDER BY h.grade DESC;
 END;
 $$;
 
@@ -421,13 +430,14 @@ $$;
 
 Select unnest(string_to_array('A, B,C D', ','));
 
-CALL add_resident('Diana ABC', 7, 'Dermatology, Ophtalmology');
 
-CREATE OR REPLACE PROCEDURE add_resident(
+
+CREATE OR REPLACE FUNCTION add_resident(
     p_name VARCHAR,
     p_grade INT,
 	p_specializations VARCHAR
 )
+RETURNS integer
 LANGUAGE plpgsql
 AS $$
 	DECLARE spec VARCHAR;
@@ -447,26 +457,42 @@ BEGIN
 			END IF;
 			INSERT into residents_specialization values (res_id, spec_id);
 		END LOOP;
+	return res_id;
 END;
 $$;
-
-CREATE OR REPLACE PROCEDURE add_hospital(
+CREATE OR REPLACE FUNCTION add_hospital(
     p_name VARCHAR,
     p_capacity INT,
     p_grade INT,
-    p_hospital_id INT
+	p_specializations VARCHAR
 )
+RETURNS integer
 LANGUAGE plpgsql
 AS $$
+	DECLARE spec VARCHAR;
+	DECLARE	spec_id INT;
+	DECLARE	h_id INT;
+	DECLARE	t VARCHAR;
 BEGIN
     -- Insert hospital
-    INSERT INTO hospitals (name, capacity, grade, hospital_id)
-    VALUES (p_name, p_capacity, p_grade, p_hospital_id);
+    INSERT INTO hospitals (name, capacity, grade)
+    VALUES (p_name, p_capacity, p_grade) returning hospital_id into h_id;
 
-    -- Make preferences for the new hospital
-    PERFORM make_preferences_of_hospital(p_hospital_id);
+FOREACH t in array string_to_array(p_specializations, ',')
+		LOOP
+			spec := TRIM(t);
+			spec_id := (SELECT specialization_id from specializations WHERE name = spec limit 1);
+			IF (spec_id is null) THEN 
+				insert into specializations values (spec) returning specialization_id into spec_id;
+			END IF;
+			INSERT into hospital_specialization values (h_id, spec_id);
+		END LOOP;
+	return h_id;
 END;
 $$;
+select * from specializations;
+SELECT add_hospital('Diana ABC', 7, 6, 'Dermatology, Ophtalmology');
+
 CREATE OR REPLACE FUNCTION get_unassigned_resident()
 RETURNS INT
 LANGUAGE plpgsql
@@ -555,9 +581,9 @@ BEGIN
     ri := get_unassigned_resident();
     WHILE ri IS NOT NULL AND NOT are_hospitals_filled() LOOP
         SELECT hospital_id INTO hj
-        FROM resident_hospital_preferences natural join hospitals 
+        FROM resident_hospital_preferences --natural join hospitals 
         WHERE resident_id = ri
-        ORDER BY grade
+        -- ORDER BY hospitals.grade
         LIMIT 1;
 
         WHILE hj IS NOT NULL AND (SELECT openPos FROM hospitals WHERE hospital_id = hj) = 0 LOOP
@@ -565,9 +591,9 @@ BEGIN
             WHERE resident_id = ri AND hospital_id = hj;
 
             SELECT hospital_id INTO hj
-            FROM resident_hospital_preferences natural join hospitals 
+            FROM resident_hospital_preferences --natural join hospitals 
             WHERE resident_id = ri
-            ORDER BY grade
+            --ORDER BY grade
             LIMIT 1;
         END LOOP;
 
@@ -580,22 +606,6 @@ BEGIN
         INSERT INTO matchings (hospital_id, resident_id) VALUES (hj, ri);
         UPDATE residents SET assigned = TRUE WHERE resident_id = ri;
         UPDATE hospitals SET openPos = openPos - 1 WHERE hospital_id = hj;
-
-        -- IF (SELECT capacity FROM hospitals WHERE hospital_id = hj) = 0 THEN
-        --     rk := get_worst_resident(hj);
-        --     DELETE FROM resident_hospital_preferences WHERE resident_id = rk AND hospital_id = hj;
-        --     DELETE FROM hospital_resident_preferences WHERE resident_id = rk AND hospital_id = hj;
-        --     UPDATE residents SET assigned = FALSE WHERE resident_id = rk;
-        --     DELETE FROM matchings WHERE hospital_id = hj AND resident_id = rk;
-        --     UPDATE hospitals SET capacity = capacity + 1 WHERE hospital_id = hj;
-
-        --     FOR res IN SELECT * FROM hospital_resident_preferences WHERE hospital_id = hj LOOP
-        --         DELETE FROM hospital_resident_preferences WHERE resident_id = res.resident_id AND hospital_id = hj;
-        --         DELETE FROM resident_hospital_preferences WHERE resident_id = res.resident_id AND hospital_id = hj;
-        --         DELETE FROM matchings WHERE hospital_id = hj AND resident_id = res.resident_id;
-        --         UPDATE residents SET assigned = FALSE WHERE resident_id = res.resident_id;
-        --     END LOOP;
-        -- END IF;
 
         ri := get_unassigned_resident();
     END LOOP;
