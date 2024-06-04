@@ -9,7 +9,6 @@ import java.util.List;
 
 import classes.Resident;
 import classes.Specialization;
-import dao.HospitalDAO;
 import classes.Hospital;
 import db.Database;
 import lombok.Getter;
@@ -22,7 +21,7 @@ public class MainFrame extends JFrame {
     ControlPanel controlPanel;
     JTextArea textArea;
     public MainFrame() {
-        super("My Drawing Application");
+        super("Hospital assigner");
         init();
     }
 
@@ -45,7 +44,7 @@ public class MainFrame extends JFrame {
         add(scrollPane, BorderLayout.CENTER);
 
         pack();
-        setSize(800, 500);
+        setSize(1000, 500);
     }
 
     public void seeHospitals() {
@@ -75,6 +74,7 @@ public class MainFrame extends JFrame {
         for (Resident resident : residents) {
             residentsText.append("ID: ").append(resident.getResident_id())
                     .append(", Name: ").append(resident.getName())
+                    .append(", Grade: ").append(resident.getGrade())
                     .append(", Specialization: ").append(resident.getSpecialization())
                     .append("\n");
         }

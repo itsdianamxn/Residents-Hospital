@@ -4,7 +4,6 @@ import Interface.MainFrame;
 import classes.Hospital;
 import classes.Resident;
 import classes.Specialization;
-import dao.HospitalDAO;
 import db.Database;
 
 import java.sql.SQLException;
@@ -65,8 +64,10 @@ public class Main {
         }
 
         for(Hospital hospital: hospitals){
-            HospitalDAO.insert(hospital);
-            hospital.setHospital_id(HospitalDAO.findByName(hospital.getName()).getHospital_id());
+            /*HospitalDAO.insert(hospital);
+            hospital.setHospital_id(HospitalDAO.findByName(hospital.getName()).getHospital_id());*/
+            Database.addHospital(hospital, String.join(",", hospital.getSpecialization().stream().map(x -> x.getName()).collect(Collectors.toList())));
+
         }
     }
 
